@@ -66,7 +66,7 @@ resource "aws_instance" "app" {
       #!/bin/bash
       set -e
       
-      REPO_URL=""
+      REPO_URL="https://github.com/gtadayukey/Terraform-Mensageria.git"
       
       # 1) Atualiza o SO e instala Docker, Git e dependências
       sudo yum update -y
