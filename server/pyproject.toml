@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "gift_api"
+version = "0.1.0"
+description = "API REST para gerenciamento de uma lista de presentes"
+authors = [
+  "Guilherme Yokokura <gtadayukey@gmail.com>",
+  "Carlos Egger <email>"
+]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+grpcio = "^1.73.0"
+grpcio-tools = "^1.73.0"
+kafka-python = "^2.2.11"

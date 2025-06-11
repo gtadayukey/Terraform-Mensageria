@@ -1,0 +1,91 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      mynet:
+        ipv4_address: 172.18.0.2
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.18.0.3:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      mynet:
+        ipv4_address: 172.18.0.3
+
+  grpc-server:
+    build:
+      context: ./server
+    container_name: grpc-server
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: 172.18.0.3:9092
+    ports:
+      - "50051:50051"
+    command: python server.py
+    networks:
+      mynet:
+        ipv4_address: 172.18.0.4
+
+  client:
+    build:
+      context: ./server
+    container_name: client
+    depends_on:
+      - grpc-server
+    command: python client.py
+    networks:
+      mynet:
+        ipv4_address: 172.18.0.5
+
+  consumer:
+    build:
+      context: ./server
+    container_name: consumer
+    depends_on:
+      - grpc-server
+    command: python consumer.py
+    networks:
+      mynet:
+        ipv4_address: 172.18.0.6
+
+  api_watch:
+    build: ./api/
+    environment:
+      FLASK_APP: api.painel.app
+      FLASK_ENV: development
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_RUN_PORT: 80
+    ports:
+      - '80:80'
+    depends_on:
+      - consumer
+    container_name: api_watch
+    command: flask run
+    restart: unless-stopped
+
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
+          gateway: 172.18.0.1

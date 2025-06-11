@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package messaging;
+
+// Serviço que expõe o método SendMessage
+service MessageService {
+  rpc SendMessage (MessageRequest) returns (MessageResponse);
+}
+
+// Mensagem de requisição: chave e valor
+message MessageRequest {
+  string key   = 1;
+  string value = 2;
+}
+
+// Mensagem de resposta: sucesso e possível erro
+message MessageResponse {
+  bool   success = 1;
+  string error   = 2;
+}
+
